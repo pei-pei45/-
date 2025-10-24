@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./css/inputnumber.css" />
+    <link rel="stylesheet" href="./css/index.css" />
+    <title>购物车</title>
+  </head>
+  <body>
+    <div class="app-container" id="app">
+      <!-- 顶部banner -->
+      <div class="banner-box"><img src="./img/fruit.jpg" alt="" /></div>
+      <!-- 面包屑 -->
+      <div class="breadcrumb">
+        <span>🏠</span>
+        /
+        <span>购物车</span>
+      </div>
+      <!-- 购物车主体 -->
+      <div class="main">
+        <div class="table">
+          <!-- 头部 -->
+          <div class="thead">
+            <div class="tr">
+              <div class="th">选中</div>
+              <div class="th th-pic">图片</div>
+              <div class="th">单价</div>
+              <div class="th num-th">个数</div>
+              <div class="th">小计</div>
+              <div class="th">操作</div>
+            </div>
+          </div>
+          <!-- 身体 -->
+          <div class="tbody" v-if="fruitList.length!=0">
+            <div class="tr" v-for="(item,index) in fruitList" :key="item.id" :class="{active:item.isChecked}">
+              <div class="td"><input type="checkbox" v-model="item.isChecked"  /></div>
+              <div class="td"><img :src="item.icon" alt="" /></div>
+              <div class="td">{{item.price}}</div>
+              <div class="td">
+                <div class="my-input-number">
+                  <button class="decrease" :disabled="item.num<=1" @click="item.num--" > - </button>
+                  <span class="my-input__inner">{{item.num}}</span>
+                  <button class="increase" @click="item.num++" > + </button>
+                </div>
+              </div>
+              <div class="td">{{item.num*item.price}}</div>
+              <!-- delete不能作为函数名  在 JavaScript 中，delete是一个关键字，用于删除对象的属性，不能将其用作函数或方法的名称。 -->
+              <div class="td"><button @click="del(item.id)">删除</button></div>
+            </div>
+        <!-- 底部 -->
+        <div class="bottom">
+          <!-- 全选 -->
+          <label class="check-all" >
+            <input type="checkbox" v-model="isAll" />
+            全选
+          </label>
+          <div class="right-box">
+            <!-- 所有商品总价 -->
+            <span class="price-box">总价&nbsp;&nbsp;:&nbsp;&nbsp;¥&nbsp;
+              <span class="price">{{totalPrice}}</span>
+            </span>
+            <!-- 结算按钮 -->
+            <button class="pay">结算{{totalCount}}</button>
+          </div>
+        </div>
+      </div>
+      <!-- 空车 -->
+      <div class="empty" v-else>🛒空空如也</div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script>
+      const app = new Vue({
+        el: '#app',
+        data: {
+          // 水果列表
+          fruitList: [
+            {
+              id: 1,
+              icon: './img/火龙果.png',
+              isChecked: true, 
+              num: 2,
+              price: 6,
+            },
+            {
+              id: 2,
+              icon: './img/荔枝.png',
+              isChecked: false,
+              num: 7,
+              price: 20,
+            },
+            {
+              id: 3,
+              icon: './img/榴莲.png',
+              isChecked: false,
+              num: 3,
+              price: 40,
+            },
+            {
+              id: 4,
+              icon: './img/鸭梨.png',
+              isChecked: true,
+              num: 10,
+              price: 3,
+            },
+            {
+              id: 5,
+              icon: './img/樱桃.png',
+              isChecked: false,
+              num: 20,
+              price: 34,
+            },
+          ],
+
+        },
+
+      methods:{
+        del(id){
+          this.fruitList=this.fruitList.filter(item=>item.id!==id)
+        },
+      },
+
+      computed:{
+        isAll:{
+          // get函数的返回值：用于决定全选框的状态（勾选 / 未勾选），它是根据所有子项（fruitList中的isChecked）计算得出的。
+          get(){
+            return this.fruitList.every(item=>item.isChecked)
+            // return true
+          } ,
+        // value是全选框的值  set函数将每个单选框的值修改为全选框的值
+          set(value){
+            this.fruitList.forEach(item=>item.isChecked=value)}
+
+          },
+
+          totalCount(){
+            return this.fruitList.reduce((sum,item)=>{
+              if(item.isChecked) {
+                return sum+item.num
+              } else{
+                return sum
+              }
+            },0)
+          },
+          
+          totalPrice(){
+            return this.fruitList.reduce((sum,item)=>{
+              if(item.isChecked){
+                return sum + item.num * item.price
+              }
+              else {
+                return sum
+              }
+            },0)
+          }
+        }
+      
+      })
+    </script>
+  </body>
+</html>
+
+<!--  data: {
+          // 水果列表
+          fruitList: JSON.parse(localStorage.getItem('list')) || defaultArr,
+        }, 这段代码中 fruitList: JSON.parse(localStorage.getItem('list')) || defaultArr 的作用是初始化水果列表数据，具体可以拆分为以下几个部分理解：
+从本地存储读取数据localStorage.getItem('list') 用于从浏览器的 localStorage（本地存储）中获取键为 'list' 的数据。localStorage 是浏览器提供的本地存储机制，可用于持久化保存数据（即使关闭浏览器后数据也不会丢失）。
+解析 JSON 数据localStorage 中存储的数据只能是字符串类型，所以需要用 JSON.parse() 将获取到的字符串解析为 JavaScript 对象（这里是数组）。
+设置默认值|| defaultArr 表示 “逻辑或” 判断：
+如果从 localStorage 中成功读取并解析到数据（且数据不为空），则 fruitList 使用该数据
+如果 localStorage 中没有 'list' 这个键，或解析失败（比如数据格式错误），则使用 defaultArr（预设的默认数组）作为初始值
+        
+        
+         watch: {
+          fruitList: {
+            deep: true,
+            handler (newValue) {
+              // 需要将变化后的 newValue 存入本地 （转JSON）
+              localStorage.setItem('list', JSON.stringify(newValue))
+            }
+          }
+        }    -->
+          总结：这行代码实现了 “优先使用本地存储中的历史数据，若没有则使用默认数据” 的逻辑，从而让页面在刷新或重新打开后，能够保留之前的水果列表信息，提升用户体验。
